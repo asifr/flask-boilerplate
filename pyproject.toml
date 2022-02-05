@@ -10,6 +10,7 @@ Flask = "2.0.2"
 Flask-Cors = "3.0.10"
 flask-talisman = "0.8.1"
 Flask-Mail = "0.9.1"
+click = "8.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
