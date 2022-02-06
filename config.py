@@ -58,6 +58,7 @@ class Config:
     CONTENT_POLICY = "default-src: 'self' 'unsafe-inline' 'unsafe-eval' data: *"
     CORS_ORIGINS = ["*"]
     SESSION_EXPIRE = 43200
+    LOGIN_DISABLED = False
 
     # database
     SQLALCHEMY_ECHO = True
@@ -85,14 +86,23 @@ current_config = configs.get(os.environ.get("CONFIG", "development"))
 
 # create the content folder
 current_config.CONTENT_DIR.mkdir(parents=True, exist_ok=True)
+
 # create the logs folder
 current_config.LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
 # sqlite db file
-current_config.DATABASE_URI = str(current_config.CONTENT_DIR / current_config.DB_NAME)
+current_config.DATABASE_URI = "sqlite:///" + str(
+    current_config.CONTENT_DIR / current_config.DB_NAME
+)
+
 # gunicorn PID file
-current_config.GUNICORN_PID_FILE = current_config.LOGS_DIR / (current_config.APPNAME + "-gunicorn.pid")
+current_config.GUNICORN_PID_FILE = current_config.LOGS_DIR / (
+    current_config.APPNAME + "-gunicorn.pid"
+)
+
 # supervisor PID file: this path must match the pidfile in the supervisor config
 current_config.SUPERVISOR_PID_FILE = current_config.LOGS_DIR / "supervisord.pid"
+
 # full path to celery sqlite db files
 # current_config.CELERY_BROKER_URL = "sqla+sqlite:///" + str(current_config.CONTENT_DIR / current_config.BROKER_DB_NAME)
 # current_config.CELERY_RESULT_BACKEND = "db+sqlite:///" + str(current_config.CONTENT_DIR / current_config.CELERY_RESULT_DB_NAME)

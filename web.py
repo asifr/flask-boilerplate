@@ -66,11 +66,6 @@ def stub(method):
     return _stub
 
 
-def snake2title(name):
-    """Convert a snake_case string to Title Case"""
-    return " ".join(word.capitalize() for word in name.split("_"))
-
-
 class FactoryRegistry:
     """
     Register classes that will be instantiated when the create_app function is

@@ -158,7 +158,7 @@ def stop_server():
     """
     Stop a running gunicorn server.
 
-    When gunicorn is started, a pid file is written to the content/ folder with
+    When gunicorn is started, a pid file is written to the logs/ folder with
     the process ID. We read this file and send a TERM signal to kill the process.
     """
     import signal
@@ -210,7 +210,7 @@ def stop_supervisor():
 
 @cli.command()
 def create_db():
-    from web import create_app
+    from app import create_app
 
     app = create_app()
     app.db.create_tables()
@@ -218,10 +218,23 @@ def create_db():
 
 @cli.command()
 def destroy_db():
-    from web import create_app
+    from app import create_app
 
     app = create_app()
     app.db.destroy_db()
+
+
+@cli.command()
+@click.option("-n", "--name", help="name", default="admin")
+@click.option("-e", "--email", help="email", required=True)
+@click.option("-p", "--password", help="password", required=True)
+def create_admin(name, email, password):
+    from app import create_app
+    from logic import create_admin_user
+
+    app = create_app()
+    with app.app_context() as ctx:
+        create_admin_user(name, email, password)
 
 
 if __name__ == "__main__":

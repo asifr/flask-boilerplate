@@ -1,0 +1,13 @@
+{%- with messages = get_flashed_messages(with_categories=true) -%}
+    {% if messages %}
+        {% for category, message in messages %}
+            {% if category=='error' %}
+                {% set category='danger' %}
+            {% endif %}
+            {% if category=='message' %}
+                {% set category='primary' %}
+            {% endif %}
+            <div class="alert alert-{{category}}" role="alert">{{ message|safe }}</div>
+        {% endfor %}
+    {% endif %}
+{%- endwith %}

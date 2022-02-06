@@ -8,18 +8,34 @@ Flask contexts:
 """
 import web
 import app
-import sqlutils
+import models
+import logic
 from config import current_config
 
 import importlib
 
 importlib.reload(web)
 importlib.reload(app)
-importlib.reload(sqlutils)
+importlib.reload(models)
+importlib.reload(logic)
 
 flask_app = app.create_app()
 
 
 def test_db_connect():
     with flask_app.test_request_context():
-        con = flask_app.db.con
+        con = flask_app.db
+
+
+def test_models():
+    with flask_app.test_request_context():
+        db = flask_app.db
+
+    user = models.User(name="Asif Rahman", email="asiftr@gmail.com", role="admin")
+    user.set_password("password")
+
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except:
+        db.session.rollback()

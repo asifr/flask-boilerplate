@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% from "_macros.html" import render_field, render_checkbox_field, render_submit_field %}
+<div class="container my-5">
+<div class="row">
+<div class="col-6">
+    <h1>{% block title %}Sign up{% endblock %}</h1>
+
+    {% include "messages.html" %}
+
+    <form action="{{ url_for('security.signup') }}" method="POST" role="form">
+        {{ form.hidden_tag() }}
+        {{ render_field(form.name) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.password) }}
+        {{ render_submit_field(form.submit) }}
+    </form>
+
+    <div class="mt-5">
+        Already have an account? <a href="{{ url_for('security.login') }}">Log in</a>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
