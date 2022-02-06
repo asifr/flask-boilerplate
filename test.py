@@ -27,15 +27,15 @@ def test_db_connect():
         con = flask_app.db
 
 
-def test_models():
+def test_create_user():
     with flask_app.test_request_context():
         db = flask_app.db
 
-    user = models.User(name="Asif Rahman", email="asiftr@gmail.com", role="admin")
-    user.set_password("password")
+        user = models.User(name="User name", email="email@provider.com", role="admin")
+        user.set_password("password")
 
-    try:
-        db.session.add(user)
-        db.session.commit()
-    except:
-        db.session.rollback()
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except:
+            db.session.rollback()
