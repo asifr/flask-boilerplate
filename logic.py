@@ -3,9 +3,10 @@ from flask import current_app, g, session, request, url_for
 
 import models
 
-USER_STATUS = {"blocked": 0, "active": 1}
-ADMIN_ROLE = "admin"
-USER_ROLE = "user"
+STATUS = {"blocked": 0, "active": 1}
+ROLE_ADMIN = "admin"
+ROLE_USER = "user"
+ROLE_MEMBER = "member"
 
 
 def login_required(func):
@@ -51,26 +52,38 @@ def get_current_user():
     if user_token is not None:
         g.user = models.User.get_by(login_token=user_token)
         # status==0 is an inactive user account (blocked)
-        if g.user.status == USER_STATUS["blocked"]:
+        if g.user.status == STATUS["blocked"]:
             session["_user_token"] = None
             return None
         return g.user
 
 
+def email_is_available(email: str):
+    """Check if an email is available."""
+    if email is None:
+        return False
+    return models.User.query.filter_by(email=email).first() is None
+
+
+def create_user(name: str, email: str, password: str, role: str, status: int):
+    """Create a user. Returns the user object."""
+    if email_is_available(email):
+        db = current_app.db
+
+        with db.txn() as session:
+            user = models.User(name=name, email=email, role=role, status=int(status))
+            user.set_password(password)
+            session.add(user)
+
+        return user
+
+
 def create_admin_user(name, email, password):
-    db = current_app.db
-
-    user = models.User(name=name, email=email, role=ADMIN_ROLE)
-    user.set_password(password)
-
-    try:
-        db.session.add(user)
-        db.session.commit()
-    except:
-        db.session.rollback()
+    return create_user(name, email, password, ROLE_ADMIN, STATUS.get("active"))
 
 
 def logout():
+    """Remove the user from a session and the global variable"""
     if "_user_token" in session:
         session.pop("_user_token")
     g.user = None

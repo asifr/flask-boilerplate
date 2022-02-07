@@ -6,6 +6,7 @@ import sqlalchemy as sa
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from contextlib import contextmanager
 from flask_wtf import FlaskForm
 from wtforms_alchemy import ModelForm
 from wtforms import validators, StringField, PasswordField, HiddenField, SubmitField
@@ -41,6 +42,15 @@ class Model(Base):
     def session(cls):
         """Get the bound session"""
         return cls._session
+
+    @classproperty
+    def query(cls):
+        """Get a session query object
+
+        Usage:
+            models.User.query.filter_by(email=email).first()
+        """
+        return cls.session.query(cls)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -84,7 +94,7 @@ class User(Model):
     def check_password(self, value):
         from werkzeug.security import check_password_hash
 
-        return check_password_hash(self.password, value)
+        return check_password_hash(self.password_hash, value)
 
 
 class Team(Model):
@@ -158,6 +168,7 @@ class Database:
         self.reflect()
 
     def destroy_db(self):
+        """Deletes all tables"""
         self.meta.bind = self.engine
         self.meta.reflect()
         tables = list(self.meta.sorted_tables)
@@ -168,6 +179,22 @@ class Database:
                     tables.remove(table)
                 except InternalError:
                     pass
+
+    @contextmanager
+    def txn(self):
+        """Provide a transactional scope around a series of operations.
+
+        Usage:
+            with db.txn() as session:
+                user = models.User(name=name, email=email)
+                session.add(user)
+        """
+        try:
+            yield self.session
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise
 
 
 class UserForm(ModelForm):
