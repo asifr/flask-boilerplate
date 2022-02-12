@@ -13,9 +13,9 @@ File | Description
 --- | ---
 `config.py` | Development and production config options
 `web.py` | Flask application setup
-`models.py` | ORM models and forms
+`models.py` | ORM data models
 `logic.py` | Business logic
-`app.py` | Application factories for views and the main wsgi entrypoint
+`app.py` | Application factories for views, forms, and the main wsgi entrypoint
 `manage.py` | Command line interface
 `test.py` | Unit tests
 

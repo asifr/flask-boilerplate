@@ -80,3 +80,7 @@ def test_add_user_to_team():
             session.add(member)
 
         assert member.id is not None
+
+
+def test_admin_models():
+    user = models.User

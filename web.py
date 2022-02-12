@@ -1,46 +1,5 @@
 """
 Flask application using a modular factory pattern.
-
-Usage
------
-
-Create a class (e.g. Frontend) with a `Frontend.init_app(app)` method and 
-register it in the factory: `web.factories.add(Frontend)`. Set URL routes
-in the `routes` attribute.
-
-```
-import web
-
-class Frontend:
-    def __init__(self):
-        self.routes = [
-            web.Route(
-                method=["GET"],
-                rule="/",
-                func="homepage",
-                endpoint="homepage"
-            )
-        ]
-
-    def init_app(self, app):
-        pass
-
-    def homepage(self):
-        # current_app is the Flask application and can be used to access
-        # the Flask application context including any variables like the
-        # database connection
-        db = current_app.db
-        return "Hello, world!"
-```
-
-Register application factories and Create the flask application:
-
-```
-def create_app():
-    web.factories.add(Frontend)
-    app = web.create_app()
-    return app
-```
 """
 
 from collections import namedtuple

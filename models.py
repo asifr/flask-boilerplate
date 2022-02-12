@@ -1,5 +1,5 @@
 """
-Models and forms.
+Data models
 """
 
 import sqlalchemy as sa
@@ -7,9 +7,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from contextlib import contextmanager
-from flask_wtf import FlaskForm
-from wtforms_alchemy import ModelForm
-from wtforms import validators, StringField, PasswordField, HiddenField, SubmitField
 
 Base = declarative_base()
 
@@ -195,62 +192,3 @@ class Database:
         except:
             self.session.rollback()
             raise
-
-
-class UserForm(ModelForm):
-    class Meta:
-        model = User
-        exclude = ["password_hash"]
-
-
-class TeamForm(ModelForm):
-    class Meta:
-        model = Team
-
-
-class LoginForm(FlaskForm):
-    email = StringField(
-        "Email", validators=[validators.email(), validators.InputRequired()]
-    )
-    password = PasswordField("Password", validators=[validators.InputRequired()])
-    submit = SubmitField("Login")
-
-    def validate(self):
-        check_validate = super(LoginForm, self).validate()
-
-        # if our field validators do not pass
-        if not check_validate:
-            return False
-
-        # Does the user exist?
-        user = User.query.filter_by(email=self.email.data).first()
-        if not user:
-            self.email.errors.append("Invalid email or password")
-            return False
-
-        # Do the passwords match
-        if not user.check_password(self.password.data):
-            self.email.errors.append("Invalid email or password")
-            return False
-
-        return True
-
-
-class ChangePasswordForm(FlaskForm):
-    password = PasswordField(
-        "Password",
-        validators=[
-            validators.InputRequired(),
-            validators.length(min=4),
-            validators.EqualTo("confirm", message="Passwords must match"),
-        ],
-    )
-    confirm = PasswordField("Repeat Password")
-
-
-class RequestPasswordResetForm(FlaskForm):
-    email = StringField(
-        "Email",
-        validators=[validators.email(), validators.InputRequired()],
-        description="Enter the email you used to signup",
-    )

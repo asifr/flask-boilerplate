@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h1>{% block title %}Admin{% endblock %}</h1>
+
+<h2>Tables</h2>
+
+{% for table in tables %}
+	{{ table.name }}
+{% endfor %}
+
+
+{% endblock %}

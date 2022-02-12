@@ -1,8 +1,70 @@
 from flask import current_app, jsonify, render_template, g, session, redirect, url_for
+from flask_wtf import FlaskForm
+from wtforms_alchemy import ModelForm
+from wtforms import validators, StringField, PasswordField, HiddenField, SubmitField
 
 import web
 import models
 import logic
+
+
+class UserForm(ModelForm):
+    class Meta:
+        model = models.User
+        exclude = ["password_hash"]
+
+
+class TeamForm(ModelForm):
+    class Meta:
+        model = models.Team
+
+
+class LoginForm(FlaskForm):
+    email = StringField(
+        "Email", validators=[validators.email(), validators.InputRequired()]
+    )
+    password = PasswordField("Password", validators=[validators.InputRequired()])
+    submit = SubmitField("Login")
+
+    def validate(self):
+        check_validate = super(LoginForm, self).validate()
+
+        # if our field validators do not pass
+        if not check_validate:
+            return False
+
+        # Does the user exist?
+        user = User.query.filter_by(email=self.email.data).first()
+        if not user:
+            self.email.errors.append("Invalid email or password")
+            return False
+
+        # Do the passwords match
+        if not user.check_password(self.password.data):
+            self.email.errors.append("Invalid email or password")
+            return False
+
+        return True
+
+
+class ChangePasswordForm(FlaskForm):
+    password = PasswordField(
+        "Password",
+        validators=[
+            validators.InputRequired(),
+            validators.length(min=4),
+            validators.EqualTo("confirm", message="Passwords must match"),
+        ],
+    )
+    confirm = PasswordField("Repeat Password")
+
+
+class RequestPasswordResetForm(FlaskForm):
+    email = StringField(
+        "Email",
+        validators=[validators.email(), validators.InputRequired()],
+        description="Enter the email you used to signup",
+    )
 
 
 class Database:
@@ -23,6 +85,8 @@ class Database:
 
 
 class Security:
+    """Authentication"""
+
     def __init__(self):
         self.routes = [
             web.Route(
@@ -57,12 +121,8 @@ class Security:
         """Template variables"""
         return dict(
             current_user=logic.get_current_user(),
-            is_authenticated=self.is_authenticated,
+            is_authenticated=logic.is_authenticated(),
         )
-
-    @property
-    def is_authenticated(self):
-        return logic.get_current_user() is not None
 
     def unauthorized(self):
         return redirect(url_for("security.login"))
@@ -80,6 +140,8 @@ class Security:
 
 
 class Admin:
+    """Admin interface on top of an existing data model"""
+
     def __init__(self):
         self.routes = [
             web.Route(
@@ -92,7 +154,7 @@ class Admin:
                 method=["GET", "POST"],
                 rule="/admin/<table>",
                 func="table_view",
-                endpoint="admin.table",
+                endpoint="admin.list",
             ),
             web.Route(
                 method=["GET", "POST"],
@@ -101,6 +163,8 @@ class Admin:
                 endpoint="admin.edit",
             ),
         ]
+
+        self.models = [models.User, models.Team, models.TeamMember]
 
     @logic.login_required
     def homepage(self):

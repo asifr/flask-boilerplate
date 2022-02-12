@@ -14,7 +14,7 @@ class Config:
     TEMPLATES_FOLDER = "templates"
 
     # Generate secret key: openssl rand -base64 32
-    SECRET_KEY = os.environ.get("SECRET_KEY", None) or b"secret"
+    SECRET_KEY = os.environ.get("SECRET_KEY", b"secret")
 
     # Gunicorn WSGI application settings
     # From: https://docs.gunicorn.org/en/latest/run.html
@@ -43,7 +43,7 @@ class Config:
     MAIL_SERVER = "smtp.sendgrid.net"
     MAIL_PORT = 587
     MAIL_USE_TLS = True
-    MAIL_USERNAME = "apikey"
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("SENDGRID_API_KEY")
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER")
 
